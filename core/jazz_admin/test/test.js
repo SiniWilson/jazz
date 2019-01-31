@@ -302,8 +302,8 @@ describe('jazz_admin', function () {
         "body": {}
       };
 
-      config = configObj.getConfig(event, context);
       context = awsContext();
+      config = configObj.getConfig(event, context);
     });
 
     it("should indicate internal server error when admin configuration is not fetched", () => {
