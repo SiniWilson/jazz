@@ -38,14 +38,16 @@ class Logger(object):
     # init log_level, default config, context_details
     def __init__(self, event={}, context={}):
         self.log_levels = {
-            'error': 4,
-            'warn': 3,
-            'info': 2,
-            'verbose': 1,
-            'debug': 0
+            'fatal': 6,
+            'error': 5,
+            'warn': 4,
+            'info': 3,
+            'verbose': 2,
+            'debug': 1,
+            'trace': 0
         }
         self.config = {
-            'cur_loglevel': 'info',
+            'cur_loglevel': 'debug',
             'context_details': '',
             'show_timestamp': True,
             'show_linenumber': True
@@ -78,7 +80,7 @@ class Logger(object):
             self.config['context_details'] = ''
 
     def print_file(self, fil):
-        print self.get_linenumber()
+        print (self.get_linenumber())
 
     def get_linenumber(self):
         """
@@ -143,7 +145,7 @@ class Logger(object):
         if self.log_levels[level] >= self.log_levels[cur_loglevel]:
             output_message = timestamp + \
                         self.config.get('context_details') + \
-                        timestamp + str(level).upper() + "\t" + \
+                        str(level).upper() + "\t" + \
                         linenumber + \
                         message
             print(output_message)
@@ -163,3 +165,9 @@ class Logger(object):
 
     def debug(self, message):
         self.log('debug', message)
+
+    def fatal(self, message):
+        self.log('fatal', message)
+
+    def trace(self, message):
+        self.log('trace', message)

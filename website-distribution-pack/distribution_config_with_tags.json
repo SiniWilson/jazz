@@ -1,15 +1,15 @@
 {
   "DistributionConfig": {
-    "CallerReference": "{conf_stack_prefix}-{env}-static-website-distribution-{service_name}",
+    "CallerReference": "{env}-static-website-distribution-{service_name}",
     "Aliases": {
       "Quantity": 0
     },
     "Origins": {
       "Quantity": 1,
       "Items": [{
-        "Id": "{conf_stack_prefix}-{env}-static-website-origin-{service_name}",
-        "DomainName": "{conf_s3bucketname}.s3.amazonaws.com",
-        "OriginPath": "/{service_name}",
+        "Id": "{env}-static-website-origin-{service_name}",
+        "DomainName": "{bucketName}.s3.amazonaws.com",
+        "OriginPath": "/{env}",
         "S3OriginConfig": {
           "OriginAccessIdentity": "{conf_origin_id}"
         }
@@ -17,7 +17,7 @@
     },
     "DefaultRootObject": "index.html",
     "DefaultCacheBehavior": {
-      "TargetOriginId": "{conf_stack_prefix}-{env}-static-website-origin-{service_name}",
+      "TargetOriginId": "{env}-static-website-origin-{service_name}",
       "ForwardedValues": {
         "QueryString": true,
         "Cookies": {
@@ -28,9 +28,9 @@
         "Enabled": false,
         "Quantity": 0
       },
-      "SmoothStreaming": true,
+      "SmoothStreaming": false,
       "Compress": true,
-      "ViewerProtocolPolicy": "allow-all",
+      "ViewerProtocolPolicy": "redirect-to-https",
       "MinTTL": 3600
     },
     "CacheBehaviors": {
@@ -58,8 +58,8 @@
   "Tags": {
     "Items": [
       {
-        "Key": "application",
-        "Value": "jazz"
+        "Key": "Application",
+        "Value": "Jazz"
       },
       {
         "Key": "service",
@@ -76,6 +76,10 @@
       {
         "Key": "owner",
         "Value": "{owner}"
+      },
+      {
+        "Key": "applicationID",
+        "Value": "{app_id}"
       }
     ]
   }

@@ -1,0 +1,14 @@
+service_id: 7ebfee9c-51e6-5679-5486-0d5e89a54693
+providerMemorySize: 256
+providerTimeout: 160
+
+# Do not modify!
+providerRuntime: nodejs10.x
+
+# Do not modify! We currently support us-west-2 only.
+region: us-west-2
+owner: Smalire
+require_internal_access: true
+iamRoleARN: arn:aws:iam::302890901340:role/jazz_platform_services
+event_source_stream: arn:aws:kinesis:us-west-2:302890901340:stream/jazz-events-hub
+

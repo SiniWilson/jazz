@@ -1,0 +1,1 @@
+A jazz cli tool that allows creating and deleting azure resources. This is used internally by the Jazz framwork.

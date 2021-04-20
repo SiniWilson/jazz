@@ -1,0 +1,16 @@
+{
+	"TagSet": [
+		{
+			"Key": "Application",
+			"Value": "Jazz"
+		},
+		{
+			"Key": "Platform",
+			"Value": "Jazz"
+		},
+		{
+			"Key": "Owner",
+			"Value": "ServerlessDev@T-Mobile.com"
+		}
+	]
+}

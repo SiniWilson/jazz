@@ -1,4 +1,4 @@
-# Python Template Project
+# Config reader
 # @Author:
 # @version: 1.0
 
@@ -19,12 +19,12 @@ class Config:
         conf = ConfigParser()
         # Add config variables in the respective config files
         # and they would be available in index handler.
-        if stage == 'dev':
-            conf.read('components/dev-config.ini')
+        if stage == 'prod':
+            conf.read('components/prod-config.ini')
         elif stage == 'stg':
             conf.read('components/stg-config.ini')
         else:
-            conf.read('components/prod-config.ini')
+            conf.read('components/dev-config.ini')
         return conf
 
     def get_config(self, secretObj):

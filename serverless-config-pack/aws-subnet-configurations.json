@@ -1,0 +1,52 @@
+{
+	"provider": "aws",
+	"accounts": [{
+		"id": "302890901340",
+		"name": "TMODEVOPS",
+		"region": "us-west-2",
+		"security_groups": "sg-5a1e9023",
+		"subnets": "subnet-2c350164,subnet-774a8d2d,subnet-5fe4f139"
+	},
+	{
+		"id": "641049064253",
+		"name": "TMOCDE",
+		"region": "us-west-2",
+		"security_groups": "sg-0b772fbf822f70c1e",
+		"subnets": "subnet-e6f94cbe,subnet-7afd950c,subnet-77346713"
+	},
+	{
+		"id": "484695107796",
+		"name": "TMONPE",
+		"region": "us-west-2",
+		"security_groups": "sg-0082d2da905e18b9f",
+		"subnets": "subnet-3070827b,subnet-5b872622,subnet-dbf84181"
+	},
+	{
+		"id": "232399723950",
+		"name": "TMOPUB",
+		"region": "us-west-2",
+		"security_groups": "",
+		"subnets": ""
+	},
+	{
+		"id": "678337661745",
+		"name": "TMOSD",
+		"region": "us-west-2",
+		"security_groups": "",
+		"subnets": ""
+	},
+	{
+		"id": "667978626758",
+		"name": "TMOSECURITY",
+		"region": "us-west-2",
+		"security_groups": "",
+		"subnets": ""
+	},
+	{
+		"id": "700185120456",
+		"name": "TMONPE2",
+		"region": "us-west-2",
+		"security_groups": "sg-0633b6f66fff97e05",
+		"subnets": "subnet-0e4f808e6d0784e3b,subnet-0362e2a805da6f02c"
+	}]
+}

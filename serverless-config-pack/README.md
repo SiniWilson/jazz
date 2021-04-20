@@ -1,3 +1,5 @@
-## Serverless configuration files
+# Jazz's serverless configuration files!
 
-Serverless configuration files for different runtime environments to be used in the CI/CD workflow for building respective services.
+[Reference](https://serverless.com/framework/docs/providers/aws/guide/serverless.yml/)
+
+Serverless deployment configuration files per each supported language. Some of the values will be filled in during service deployment (runtime).

@@ -1,0 +1,5 @@
+cd app
+cp -rf . ..
+cd ..
+rm -rf app
+hugo --buildDrafts --cleanDestinationDir

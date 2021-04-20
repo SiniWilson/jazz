@@ -1,0 +1,10 @@
+			<Step>
+                <Name>cf_getCORSDomainList</Name>
+            </Step>
+            <Step>
+                <Name>cf_CORSValidation</Name>
+            </Step>
+            <Step>
+            	<Condition>request.verb != "OPTIONS"</Condition>
+                <Name>cf_LoggerProxyResponse</Name>
+            </Step>

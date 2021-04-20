@@ -1,0 +1,68 @@
+# This is a parameterized Job configuration which would run in parallel 
+# with jazz deploy jobs. The Job will initiate a Fortify Scan on repo URL/commit being passed as input, get the 
+# scanner response after scan and finally push the metrics to Sonar for reporting
+
+# This pipeline is expected to be triggered with the following required PARAMS
+#@Pipeline trigger params {serviceId, requestId, keyPrefix, branch, repo, commitHash}
+
+# added for CDP compliance: https://tmobile.gitlab.io/cdp/community-hub/documentation/COMMON/#usage
+include:
+  - project: 'tmobile/templates'
+    ref: tmo/master
+    file: '/gitlab-ci/.tmo.global.common.gitlab-ci.yml'
+
+# exclude running pipeline on pushes for all jobs
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - when: always
+
+stages:
+  - tmo
+  - test
+  - init
+  - status
+  - publish
+
+variables:
+  API_BASE_URL: https://cloud-api.corporate.t-mobile.com/api/jazz
+  SCRIPTS_REPO: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/core/jazz-pipeline-module.git
+  DOCKER_IMAGE: registry.gitlab.com/tmobile/jazz/test/core_test/docker/groovy:1.0.0
+  WORKING_DIRECTORY: WorkingDirectory
+  WORKING_MODULE_DIRECTORY: $WORKING_DIRECTORY/jazz-pipeline-module
+
+job 'initiate-scan':
+  stage: init
+  image: $DOCKER_IMAGE
+  script:
+    - git clone -b master $SCRIPTS_REPO  $WORKING_MODULE_DIRECTORY   # Cloning build module
+    - bash scripts/Init.sh "$serviceId" "$requestId" "$branch" "$keyPrefix" "$commitHash" 
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+# job 'get-scan-status':
+#   stage: status
+#   image: $DOCKER_IMAGE
+#   script:
+#     - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+#     - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+#     - bash scripts/Status.sh
+#   artifacts:
+#     paths:
+#       - $WORKING_DIRECTORY
+#     when: always
+
+# job 'publish-metrics-to-sonar':
+#   stage: publish
+#   image: $DOCKER_IMAGE
+#   script:
+#     - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+#     - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+#     - bash scripts/Publish.sh "$keyPrefix" "$branch"
+#   artifacts:
+#     paths:
+#       - $WORKING_DIRECTORY
+#     when: always

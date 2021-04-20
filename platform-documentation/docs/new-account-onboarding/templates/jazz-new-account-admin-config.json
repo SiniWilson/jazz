@@ -1,0 +1,115 @@
+{
+    "ACCOUNTID": "$accountId",
+    "ACCOUNTNAME": "$accountName",
+    "CLOUDFRONT": {
+      "CLOUDFRONT_ORIGIN_ID": "$oai",
+      "LAMBDA_AT_EDGE": {
+        "INDEX_FORWARDER": "arn:aws:lambda:us-east-1:$accountId:function:jazz_idxfwd_$accountName:1",
+        "IP_AUTHORIZER": "arn:aws:lambda:us-east-1:$accountId:function:jazz_ipauth_$accountName:1",
+        "IP_AUTHORIZER_INDEX_FORWARDER": "arn:aws:lambda:us-east-1:$accountId:function:jazz_ipauthidxfw_$accountName:1"
+      }
+    },
+    "IAM": {
+      "PLATFORMSERVICES_ROLEID": "arn:aws:iam::$accountId:role/jazz-platform_services",
+      "USERSERVICES_ROLEID": "arn:aws:iam::$accountId:role/jazz-basic_services",
+      "VPCSERVICES_ROLEID": "arn:aws:iam::$accountId:role/jazz-vpc_services"
+    },
+    "REGIONS": [
+      {
+        "API_GATEWAY": {
+          "DEV": {
+            "PRIVATE": {
+              "*": {
+                "DNS_HOSTNAME": "$foobar.execute-api.us-west-2.amazonaws.com",
+                "ID": "$foobar",
+                "NAME": "dev.jazz.internal"
+              }
+            }
+          },
+          "PROD": {
+            "PRIVATE": {
+              "*": {
+                "DNS_HOSTNAME": "$foobar.execute-api.us-west-2.amazonaws.com",
+                "ID": "$foobar",
+                "NAME": "jazz.internal"
+              }
+            }
+          },
+          "STG": {
+            "PRIVATE": {
+              "*": {
+                "DNS_HOSTNAME": "$foobar.execute-api.us-west-2.amazonaws.com",
+                "ID": "$foobar",
+                "NAME": "stg.jazz.internal"
+              }
+            }
+          }
+        },
+        "DEFAULT_SECURITY_GROUP_IDS": [
+
+        ],
+        "DEFAULT_SUBNET_IDS": [
+
+        ],
+        "LOGS": {
+          "DEV": "arn:aws:logs:us-west-2:302890901340:destination:jazz-us-west-2-kinesis",
+          "PROD": "arn:aws:logs:us-west-2:302890901340:destination:jazz-us-west-2-kinesis",
+          "STG": "arn:aws:logs:us-west-2:302890901340:destination:jazz-us-west-2-kinesis"
+        },
+        "REGION": "us-west-2",
+        "S3": {
+          "DEV": "jazz-deployments-$accountName-uswest2-dev",
+          "PROD": "jazz-deployments-$accountName-uswest2-prod",
+          "STG": "jazz-deployments-$accountName-uswest2-stg"
+        }
+      },
+      {
+        "API_GATEWAY": {
+          "DEV": {
+            "PRIVATE": {
+              "*": {
+                "DNS_HOSTNAME": "$foobar.execute-api.us-east-1.amazonaws.com",
+                "ID": "$foobar",
+                "NAME": "dev.jazz.internal"
+              }
+            }
+          },
+          "PROD": {
+            "PRIVATE": {
+              "*": {
+                "DNS_HOSTNAME": "$foobar.execute-api.us-east-1.amazonaws.com",
+                "ID": "$foobar",
+                "NAME": "jazz.internal"
+              }
+            }
+          },
+          "STG": {
+            "PRIVATE": {
+              "*": {
+                "DNS_HOSTNAME": "$foobar.execute-api.us-east-1.amazonaws.com",
+                "ID": "$foobar",
+                "NAME": "stg.jazz.internal"
+              }
+            }
+          }
+        },
+        "DEFAULT_SECURITY_GROUP_IDS": [
+
+        ],
+        "DEFAULT_SUBNET_IDS": [
+
+        ],
+        "LOGS": {
+          "DEV": "arn:aws:logs:us-east-1:302890901340:destination:jazz-us-east-1-kinesis",
+          "PROD": "arn:aws:logs:us-east-1:302890901340:destination:jazz-us-east-1-kinesis",
+          "STG": "arn:aws:logs:us-east-1:302890901340:destination:jazz-us-east-1-kinesis"
+        },
+        "REGION": "us-east-1",
+        "S3": {
+          "DEV": "jazz-deployments-$accountName-useast1-dev",
+          "PROD": "jazz-deployments-$accountName-useast1-prod",
+          "STG": "jazz-deployments-$accountName-useast1-stg"
+        }
+      }
+    ]
+  }

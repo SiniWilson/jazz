@@ -1,0 +1,392 @@
+#!groovy​
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurperClassic
+import groovy.time.TimeCategory 
+
+
+node('mesos_cloud'){
+
+	stage ('Backfill Service Catalog'){
+        try {
+			def repoNameList
+			if (params.ProjectKey) {
+				projectKey =  params.ProjectKey.trim()
+			}
+			if (params.Limits) {
+				repoLimit =  params.Limits.trim() as int
+			}
+
+			if (params.RepoName) {
+				repoNameList = params.RepoName.split(",");
+				
+			}
+
+			//gitConfig()
+
+			def service = getRepository(projectKey, repoLimit, repoNameList);
+			if(service.size() > 0){
+				repositories = service
+			} else {
+				error "No repositories found for project $projectKey"
+			}
+			def accessToken
+			withCredentials([usernamePassword(credentialsId: 'svc_jnk_prd_cas', passwordVariable: 'PWD', usernameVariable: 'UNAME')]) {
+					def loginPayload = [
+						'username': UNAME,
+						'password': PWD
+					]
+					def accessTokenPayload = JsonOutput.prettyPrint(JsonOutput.toJson(loginPayload))
+					def output = sh(returnStdout: true, script: "curl -X POST -k -v -H \"Content-type: application/json\" https://cloud-api.corporate.t-mobile.com/api/platform/login  -d \'${accessTokenPayload}\'")
+					def jsonOutput = parseJson(output)
+					accessToken = jsonOutput.data.token
+			}
+
+			echo "RepoName: $repoNameList"
+
+			cloneRepository(repositories, accessToken, repoNameList)
+			
+		}catch(ex) {
+    		error "Exception occured : $ex"
+    	}
+    }
+
+}
+
+def getRepository(projectKey, repositoryLimit, repoNameList){
+	try{
+		def repo_model = [
+			'id' : null,
+			'name' : '',
+			'state' : '',
+			'links' : '',
+			'created_by' : ''
+		]
+		
+		def repos = []
+		withCredentials([string(credentialsId: 'CorpBitbucketAuthKey', variable: 'AUTHKEY')]) {
+		
+			def bitbucketUrl
+			if(repoNameList == null) {
+				bitbucketUrl = "$BITBUCKET_URL" + projectKey + "/repos?limit=" + repositoryLimit
+				def bitbucketApiResponse = sh(returnStdout: true, script: "curl -k -H \'Content-type: application/json\' -H \'Authorization :Basic $AUTHKEY\' $bitbucketUrl").trim()
+								
+				def parsedResponseStr = parseJson(bitbucketApiResponse)
+				
+				for (value in parsedResponseStr["values"]){
+
+					echo "value: $value"
+					repo_model.id = value.id
+					repo_model.name = value.name
+					repo_model.state = value.state
+					repo_model.slug = value.slug
+					
+					def links = value.links.clone
+					for (item in links){
+						echo "item: $item"
+						if(item.name == 'http'){
+							repo_model.links = item.href
+						}
+					}
+
+					def repo_Details = getRepoDetails(repo_model.slug)
+					repo_model.created_by = repo_Details.created_by
+
+					repo_model.timestamp = convertTimeStamp(repo_Details.time)
+
+					repo_model.repository = getRepoURL(projectKey, value.name)
+
+					def repository = JsonOutput.prettyPrint(JsonOutput.toJson(repo_model))
+					echo "repository: $repository"
+					repos.push(repository)
+				}
+			}  else {
+					for(def count = 0; count < repoNameList.size(); count ++) {
+						def strValue = repoNameList[count]
+						echo "Repo name: $strValue"
+
+						bitbucketUrl = "$BITBUCKET_URL" + projectKey + "/repos/" + strValue
+						echo "Bitbucket URL:: $bitbucketUrl"
+						def bitbucketApiResponse = sh(returnStdout: true, script: "curl -k -H \'Content-type: application/json\' -H \'Authorization :Basic $AUTHKEY\' $bitbucketUrl").trim()
+						
+						def parsedResponseStr = parseJson(bitbucketApiResponse)
+						
+						repo_model.id = parsedResponseStr.id
+						repo_model.name = parsedResponseStr.name
+						repo_model.state = parsedResponseStr.state
+						repo_model.slug = parsedResponseStr.slug
+							
+						def links = parsedResponseStr.links.clone
+						for (item in links){
+							echo "item: $item"
+							if(item.name == 'http'){
+								repo_model.links = item.href
+							}
+						}
+
+						def repo_Details = getRepoDetails(repo_model.slug)
+						repo_model.created_by = repo_Details.created_by
+						repo_model.timestamp = convertTimeStamp(repo_Details.time)
+
+						repo_model.repository = getRepoURL(projectKey, parsedResponseStr.name)
+
+						def repository = JsonOutput.prettyPrint(JsonOutput.toJson(repo_model))
+						echo "repository: $repository"
+						repos.push(repository)	
+				
+				}
+			}
+		}
+		parsedResponseStr = null
+		
+		return repos
+		
+	} catch (ex) {
+		error "Exception occured : $ex"
+	}
+}
+
+def cloneRepository(repo, token, repoNameList) {
+
+	def successList = []
+	def failureList = []	
+
+    try{
+			for (repository in repo){
+				echo "Repository $repository  " 
+				def parsedRepositoryData = parseJson(repository)
+				echo "Rrepository Name: $parsedRepositoryData.name  " 
+				if(validateRepoName(parsedRepositoryData.name, repoNameList) ) {
+					dir(parsedRepositoryData.name) {
+						checkout([$class: 'GitSCM', branches: [
+							[name: '*/master']
+						], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [
+							[credentialsId: env.BITBUCKET_CREDENTIALS_ID, url: parsedRepositoryData.links]
+						]])
+
+						sh "ls -l"
+
+						if (fileExists('deployment-env.yml')) {
+
+							def result = readFile('deployment-env.yml').trim()
+							def resultList = result.tokenize("\n")
+
+							String domain = ""
+							String service = ""
+							String created_by = parsedRepositoryData.created_by
+							String runtime = ""
+							String type = ""
+							String slack_channel = ""
+							String repositoryLink = parsedRepositoryData.repository
+
+							for (item in resultList) {
+								echo "item: $item"
+								if(item.startsWith("domain")) {
+									echo "item: $item"
+									domain = item.replace(" ", "").substring(7)
+									echo "domain:$domain"
+								} else if(item.startsWith("service")) {
+									service = item.replace(" ", "").substring(8)
+									echo "service:$service"
+								} else if(item.startsWith("providerRuntime")) {
+									runtime = item.replace(" ", "").substring(16)
+									echo "runtime:$runtime"
+									if(runtime.startsWith("nodejs")) {
+										runtime = "nodejs"
+									} else if(runtime.startsWith("python")) {
+										runtime = "python"
+									} else if(runtime.startsWith("java")) {
+										runtime = "java"
+									} else if(runtime.startsWith("c#")) {
+										runtime = "c#"
+									}
+									echo "runtime:$runtime"
+								} else if(item.startsWith("type")) {
+									type = item.replace(" ", "").substring(5)
+									echo "type:$type"
+								} else if(item.startsWith("owner")) {
+									def _owner = item.replace(" ", "").substring(6)
+									if(_owner) {
+										created_by = _owner
+									}
+									echo "created_by:$created_by"
+								} else if(item.startsWith("slack_channel")) {
+									slack_channel = item.replace(" ", "").substring(14)
+									echo "slack_channel:$slack_channel"
+								}
+							}
+
+							if (fileExists('swagger/swagger.json')) {
+								type = "api"
+							} else if (runtime == "") {
+								type = "website"
+							} else {
+								type = "function"
+							}
+
+							if(created_by == null || created_by == "") {
+								created_by = "Smalire"
+							}
+							def service_payload =[
+								'domain': domain,
+								'service': service,
+								'type': type,
+								'status': 'creation_completed',
+								'created_by': created_by,
+								'repository': repositoryLink,
+								'timestamp':parsedRepositoryData.timestamp,
+								'region': null,
+								'tags': null,
+								'description': null,
+								'email': null
+
+							]
+
+							if(runtime != "" && runtime != null) {
+								service_payload.runtime = runtime
+							}
+
+							if(slack_channel != "" && slack_channel != null) {
+								service_payload.slack_channel = slack_channel
+							}
+
+							echo JsonOutput.toJson(service_payload)
+							def payload = JsonOutput.prettyPrint(JsonOutput.toJson(service_payload))
+
+							def resp = ""
+							try{
+								resp = sh(returnStdout: true, script: "curl  -X POST  -k -v -H \"Content-Type: application/json\" https://cloud-api.corporate.t-mobile.com/api/platform/services -H \"Authorization :$token\" -d \'${payload}\'") 
+							}
+							catch(e){
+								//do nothinge.getMessage()
+								echo "error occured when updating service: " + e.getMessage()
+							}
+
+							echo "Response: $resp"
+							def parsedResponse = parseJson(resp)
+							if(parsedResponse.data != null) {
+								if(parsedResponse.data.result != null && parsedResponse.data.result == "success") {
+
+									successList.push(parsedRepositoryData.name)
+									echo "Service Update SUCCESS with payload: $payload" 
+								}
+							} else {
+								failureList.push(parsedRepositoryData.name)
+								echo "Service Update FAILED with payload: $payload" 
+							}
+						}
+
+					}
+				}
+			}
+
+			echo "Successfull Updates: $successList"
+			echo "Failed Updates: $failureList"
+
+	} catch (ex) {
+			error "Exception occured : $ex"
+	}
+}
+
+def getRepoDetails(slugValue) {
+	try{
+
+	withCredentials([string(credentialsId: 'CorpBitbucketAuthKey', variable: 'AUTHKEY')]) {
+
+		def bitbucketBranchesUrl = "$BITBUCKET_URL" + projectKey + "/repos/" + slugValue + "/branches"
+		def bitbucketBranchesApiResponse = sh(returnStdout: true, script: "curl -k -H \'Content-type: application/json\' -H \'Authorization :Basic $AUTHKEY\' $bitbucketBranchesUrl").trim()
+
+		echo "bitbucketBranchesApiResponse: $bitbucketBranchesApiResponse"
+		def parsedRespStr = parseJson(bitbucketBranchesApiResponse)
+		def commitId
+
+		for (value in parsedRespStr["values"]){
+
+			if(value.id == "refs/heads/master") {
+				commitId = value.latestCommit
+				break;
+			}
+		}
+
+		echo "Master Commit Id: $commitId"
+
+		def bitbucketCommitUrl = "$BITBUCKET_URL" + projectKey + "/repos/" + slugValue + "/commits/" + commitId
+		def bitbucketCommitApiResponse = sh(returnStdout: true, script: "curl -k -H \'Content-type: application/json\' -H \'Authorization :Basic $AUTHKEY\' $bitbucketCommitUrl").trim()
+
+		echo "bitbucketCommitApiResponse: $bitbucketCommitApiResponse"
+		def parsedCommitRespStr = parseJson(bitbucketCommitApiResponse)
+		def creator
+
+		if(parsedCommitRespStr.author != null) {
+			if(parsedCommitRespStr.author.slug != null) {
+				creator = parsedCommitRespStr.author.slug
+			}
+		}
+		echo "Creator: $creator"
+
+		def time
+		if(parsedCommitRespStr.authorTimestamp != null) {
+			time = parsedCommitRespStr.authorTimestamp
+		}
+		echo "Time: $time"
+
+		def repoDetails = [
+			'created_by': creator,
+			'time': time
+		]
+
+		echo "repoDetails: $repoDetails"
+		return repoDetails
+	}
+
+	} catch (ex) {
+		error "Exception occured : $ex"
+	}
+
+}
+
+def convertTimeStamp(time) {
+	echo "Inside convertTimeStamp: $time"
+	//dateInt = 1275491109
+	def convertedDate = null
+	if(time != null) {
+		convertedDate = new Date(time)
+		echo "Inside convertTimeStamp converted: $convertedDate"
+	}
+	return convertedDate
+}
+
+def gitConfig(){
+	echo "setting git config globally"
+	sh ("git config --global user.name '"+ env.GBL_USR_NAME + "'")
+	sh ("git config --global user.email '"+ env.GBL_USR_MAIL_ID +"'")
+}
+ 
+@NonCPS
+def parseJson(jsonString) {
+    def lazyMap = new groovy.json.JsonSlurperClassic ().parseText(jsonString)
+    def m = [:]
+    m.putAll(lazyMap)
+    return m
+}
+
+@NonCPS
+def validateRepoName(repoName, repoNameList) {
+	if(repoNameList == null) {
+		return true
+	} else if(repoNameList != null && repoName != null) {
+		for(strValue in repoNameList) {
+			//echo "Value in List :$strValue "
+			if(strValue.trim() == repoName) {
+				echo "RepoName :$strValue , matched with that of input: $repoName"
+				return true
+			}
+		}
+		
+	}
+	return false
+}
+
+def getRepoURL(projectKey, repoName) {
+	def repoURL = "https://bitbucket.corporate.t-mobile.com/projects/" + projectKey + "/repos/" + repoName
+	return repoURL
+}

@@ -1,0 +1,16 @@
+@startuml
+title Sequence Diagram for /jazz/admin/config
+participant User
+participant "API Gateway" 
+participant "Function"
+participant "DynamoDB"
+User -> "API Gateway" : /jazz/admin/config
+"API Gateway" -> "Function" : Request Context (Contains Jazz configurations in the payload)
+"Function" -> "DynamoDB" : Fetch/Add/Update configurations
+"DynamoDB" -> "Function" : Updated Jazz configurations as JSON
+"Function" --> "API Gateway": Response - Jazz configurations as JSON
+note right 
+Supports adding/updating/deleting Jazz configurations
+end note
+"API Gateway" --> User: API Response
+@enduml

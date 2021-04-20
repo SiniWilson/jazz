@@ -1,0 +1,20 @@
+navigation:
+  data: "abcd"
+  global:
+    links:
+      - text: "COMMUNITY"
+        href: "#about"
+        class: "animated-scroll"
+      - text: "BLOG"
+        href: "#blog"
+        class: "animated-scroll"
+      - text: "PROJECTS"
+        href: "#services"
+        class: "animated-scroll"
+  footer:
+    links:
+      - text: "PRIVACY"
+        href: "https://www.t-mobile.com/company/website/privacypolicy.aspx"
+        target: "_blank"
+        class: "privacy"
+

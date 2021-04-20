@@ -1,43 +1,32 @@
 /**
-	Nodejs Template Project
-  @module: error-handler.js
-  @description: Defines functions raising API Errors in required format for API Gateway integration
-	@author:
+    @module: error-handler.js
+    @description: Functions will need to return errors in a specific object structure for them to work with API Gateway	@author:
 	@version: 1.0
 **/
 
 module.exports = () => {
-    var errorObj = {
-        throwInputValidationError: function(errorMessage) { 
-            return {
-                errorType: "BadRequest",
-                message: errorMessage.toString()
-            };
-        },
-        throwForbiddenError: function(errorMessage) { //Raise not found exceptions
-            return {
-                errorType: "Forbidden",
-                message: errorMessage.toString()
-            };
-        },
-        throwUnauthorizedError: function(errorMessage) { 
-            return {
-                errorType: "Unauthorized",
-                message: errorMessage.toString()
-            };
-        },
-        throwNotFoundError: function(errorMessage) { 
-            return {
-                errorType: "NotFound",
-                message: errorMessage.toString()
-            };
-        },
-        throwInternalServerError: function(errorMessage) { 
-            return {
-                errorType: "InternalServerError",
-                message: errorMessage.toString()
-            };
-        }
+    const errorObj = {
+        throwInputValidationError: (errorMessage) => ({
+            errorType: "BadRequest",
+            message: errorMessage.toString()
+        }),
+        throwForbiddenError: (errorMessage) => ({
+            errorType: "Forbidden",
+            message: errorMessage.toString()
+        }),
+        throwUnauthorizedError: (errorMessage) => ({
+            errorType: "Unauthorized",
+            message: errorMessage.toString()
+        }),
+        throwNotFoundError: (errorMessage) => ({
+            errorType: "NotFound",
+            message: errorMessage.toString()
+        }),
+        throwInternalServerError: (errorMessage) => ({
+            errorType: "InternalServerError",
+            message: errorMessage.toString()
+        })
     };
+
     return errorObj;
 };

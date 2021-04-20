@@ -1,0 +1,11 @@
+{
+  "SPLUNK_ENDPOINT" : "{splunk_endpoint}",
+	"SPLUNK_TOKEN": "{spunk_hec_token}",
+	"SPLUNK_INDEX": "{splunk_index}",
+	"SERVICE_API_URL": "https://{conf-host-name}",
+  "ENV_URL": "/api/jazz/environments",
+  "SERVICE_URL": "/api/jazz/services",
+  "CONFIG_URL": "/api/jazz/admin/config",
+  "GRAPH_API_TOKEN_URL": "https://login.microsoftonline.com/{conf-cas-service-principal-tenantid}/oauth2/v2.0/token",
+  "SVC_PRINCIPAL_PWD_LOCATION": "{conf-cas-service-principal-pwd-location}"
+}

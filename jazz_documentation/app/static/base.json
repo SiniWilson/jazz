@@ -1,0 +1,17 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Jazz Platform API",
+    "description": "Jazz Platform API Docs",
+    "contact": {
+      "name": "Jazz Development Team",
+      "email": "serverlessdev@t-mobile.com"
+    }
+  },
+  "host": "cloud-api.corporate.t-mobile.com",
+  "basePath": "/api/jazz",
+  "schemes": [
+    "https"
+  ]
+}

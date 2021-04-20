@@ -1,6 +1,0 @@
-{
-  "DELETE_SERVICE_JOB_URL":"{conf-jenkins-host}job/delete-service/buildWithParameters",
-  "JOB_TOKEN":"slf-0714-delserv",
-  "SVC_USER":"jobexec",
-  "SVC_PASWD":"jenkinsadmin"
-}

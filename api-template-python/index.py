@@ -2,10 +2,15 @@ import sys
 import os
 import json
 
-from components.errors import CustomErrors  # noqa
+sys.path.insert(0, 'library')
+
+from components.errors import CustomErrors
 from components.response import CustomResponse
 from components.logger import Logger
 from components.config import Config
+
+# import installed package
+import requests
 
 
 def handler(event, context):
@@ -14,16 +19,17 @@ def handler(event, context):
         # initialze logger module
         logger = Logger(event, context)
 
-        # Load config handler.
+        # Load config handler 
         config = Config(event)
+        
+        ## ==== Using logger ====
+        
+        # logger.error('Runtime errors or unexpected conditions.')
+        # logger.warn('Runtime situations that are undesirable, but not wrong')
+        # logger.info('Interesting runtime events eg. connection established)')
+        # logger.verbose('Generally speaking, most log lines should be verbose.')
+        # logger.debug('Detailed information on the flow through the system.')
 
-        logger.error('Runtime errors or unexpected conditions.')
-        logger.warn('Runtime situations that are undesirable, but not wrong')
-        logger.info('Interesting runtime events eg. connection established)')
-        logger.verbose('Generally speaking, most log lines should be verbose.')
-        logger.debug('Detailed information on the flow through the system.')
-
-        # This is the happy path
         data = {
             'key': 'value'
         }
@@ -39,14 +45,15 @@ def handler(event, context):
         return response
     except Exception as e:
         # Exception Handling
-        exception_type = e.__class__.__name__
-        exception_message = e.message
-
-        # Create a JSON string here
+        # exception_type = e.__class__.__name__
+        
+        # Create a JSON error object
         api_exception_json = CustomErrors.throwInternalServerError(
-            exception_message)
+            str(e))
         raise LambdaException(api_exception_json)
 
 
 class LambdaException(Exception):
     pass
+
+

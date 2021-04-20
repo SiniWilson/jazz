@@ -1,0 +1,56 @@
+.autocomplete-suggestions {
+    text-align: left;
+    cursor: default;
+    border: 1px solid rgba(0,0,0,.5);
+    border-top: 0;
+    background: #fff;
+    box-shadow: 1px 2px 6px;
+    transition: left 0.1s ease-in-out;
+    position: absolute;
+    display: none;
+    z-index: 9999;
+    max-height: 70vh;
+    width: 265px;
+    overflow: hidden;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    
+}
+.autocomplete-suggestion {
+    position: relative;
+    cursor: pointer;
+    padding: 7px;
+    line-height: 23px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #333;
+}
+
+.autocomplete-suggestion b {
+    font-weight: normal;
+    color: #1f8dd6;
+}
+
+.autocomplete-suggestion.selected {
+    background:rgba(242, 21, 128, .7);
+    color: #fff;
+}
+
+.autocomplete-suggestion:hover {
+    background: rgba(242, 21, 128, .8);
+}
+
+.autocomplete-suggestion > .context {
+    font-size: 12px;
+}
+
+.searchbox {
+    display: inline-block;
+    float: right;
+    width: 18rem;
+}
+
+.searchbox input {
+    width: 100%;
+}

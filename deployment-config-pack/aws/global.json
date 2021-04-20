@@ -1,0 +1,46 @@
+{
+  "account_id": "302890901340",
+  "name": "TMODEVOPS",
+  "security_groups": "sg-5a1e9023",
+  "subnets": "subnet-2c350164, subnet-774a8d2d, subnet-5fe4f139",
+  "credentials_id": "2d1c6ef9-8e91-4575-a63c-12ad452edbe1",
+  "tmonpe_credentials_id": "cloud-api-services-tmonpe-aws-creds",
+  "tmodevops_credentials_id": "2d1c6ef9-8e91-4575-a63c-12ad452edbe1",
+  "git_credentials_id": "81d1748b-4480-4fef-9e3d-ba55ca3ca6a4",
+  "default_lambda_exe_role": "arn:aws:iam::302890901340:role/cloud_api_services_vpc-access",
+  "default_basic_exe_role": "arn:aws:iam::302890901340:role/cloud_api_services_basic",
+  "default_vpc_role": "arn:aws:iam::302890901340:role/cloud_api_services_vpc-access",
+  "default_basic_role": "arn:aws:iam::302890901340:role/cloud_api_services_basic",
+  "cloudfront_oai": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E2RDPPU55OWXHG",
+  "events_module_url": "https://bitbucket.corporate.t-mobile.com/scm/cap/jenkins-events-pack.git",
+  "jazz_build_module_url": "https://bitbucket.corporate.t-mobile.com/scm/cap/jazz-build-module.git",
+  "checkstyle_lib": "http://artifactory.corporate.t-mobile.com/artifactory/cld-release-local/com/puppycrawl/tools/checkstyle/7.6/checkstyle-7.6-all.jar",
+  "bitbucket_templates_project": "https://bitbucket.corporate.t-mobile.com/scm/cap/",
+  "jazz_integration_branch": "integration",
+  "sonar_creds_id": "svc_cpt_mon_prd_syn",
+  "sonar": {
+    "sonar_url": "http://sonar.corporate.t-mobile.com",
+    "enable_sonar": "false",
+    "enable_vulnerability_scan": "false",
+    "sonar_jazz_profile": "jazzprofile",
+    "dependency_check_url": "http://dl.bintray.com/jeremy-long/owasp/dependency-check-2.1.1-release.zip",
+    "dependency_check_nist_files_location": "/var/log/depcheck_test2/nistfiles/",
+    "dependency_check_nist_mirror_utility": "https://github.com/stevespringett/nist-data-mirror/releases/download/1.1.0/nist-data-mirror.jar",
+    "dependency_check_elapsed_hours_before_updates": "24",
+    "sonar_module_url": "https://bitbucket.corporate.t-mobile.com/scm/cap/sonar-project-build-pack.git"
+  },
+    "jenkins": {
+    "jenkins_webhook_api_url": "http://cld-jenkins.corporate.t-mobile.com/bitbucket-scmsource-hook/notify",
+    "jenkins_folderindex_api_url": "https://cld-jenkins.corporate.t-mobile.com/job/Cloud%20API%20Services/build?delay=0"
+  },
+  "notifications": {
+    "approver_name": "JazzAdmin",
+    "approver_disp_name": "JazzAdmin",
+    "approver_email_id": "ServerlessDev@T-Mobile.com",
+    "from_address": "noreply@jazz.t-mobile.com",
+    "production_approval_timeout_mins": "5"
+  },
+  "swagger_editor_url":"http://editor.cloud-api.corporate.t-mobile.com",
+  "amazon-integration-spec-module":"https://bitbucket.corporate.t-mobile.com/scm/cap/aws-apigateway-lambda-integration-spec.git",
+  "cloudfront_lambda_edge_arn": "arn:aws:lambda:us-east-1:302890901340:function:jazz_lambda-edge-ip-authorizer:4"
+}

@@ -1,0 +1,14 @@
+@startuml
+title Sequence Diagram for {domain}/{service}
+participant User
+participant "API Gateway" 
+participant "Function"
+User -> "API Gateway" : /{domain}/{service}
+"API Gateway" -> "Function" : Request Context
+"Function" -> "Function" : Process Request and Generate Response
+"Function" --> "API Gateway": Response Object & Context
+note right 
+Actual application logic sits here
+end note
+"API Gateway" --> User: API Response
+@enduml

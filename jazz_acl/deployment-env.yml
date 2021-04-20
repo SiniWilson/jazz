@@ -1,0 +1,6 @@
+providerMemorySize : 1024
+providerTimeout : 30
+service_id: 873b5068-21e4-fe17-8134-023f549e9082
+iamRoleARN: arn:aws:iam::302890901340:role/jazz_platform_services
+require_internal_access: true
+custom_integration_spec: true

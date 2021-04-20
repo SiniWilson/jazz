@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AccessControl async="false" continueOnError="false" enabled="true" name="cf_AccessControl">
+    <DisplayName>cf_AccessControl</DisplayName>
+    <Properties/>
+    <IPRules noRuleMatchAction="DENY">
+        <MatchRule action="ALLOW">
+            <SourceAddress mask="17">208.54.0.0</SourceAddress>
+            <SourceAddress mask="19">206.29.160.0</SourceAddress>
+            <SourceAddress mask="32">50.16.171.230</SourceAddress>
+            <SourceAddress mask="32">52.87.149.171</SourceAddress>
+            <SourceAddress mask="32">54.70.109.48</SourceAddress>
+            <SourceAddress mask="32">52.37.141.85</SourceAddress>
+            <SourceAddress mask="32">52.32.92.167</SourceAddress>
+            <SourceAddress mask="32">52.33.201.129</SourceAddress>
+            <SourceAddress mask="32">52.26.185.244</SourceAddress>
+            <SourceAddress mask="32">52.33.86.197</SourceAddress>
+            <SourceAddress mask="32">52.36.55.147</SourceAddress>
+            <SourceAddress mask="32">52.37.107.199</SourceAddress>
+            <SourceAddress mask="32">52.7.57.242</SourceAddress>
+            <SourceAddress mask="32">52.71.13.22</SourceAddress>
+            <SourceAddress mask="32">52.35.163.91</SourceAddress>
+            <SourceAddress mask="32">52.34.168.103</SourceAddress>
+            <SourceAddress mask="32">52.40.2.41</SourceAddress>
+            <SourceAddress mask="32">52.11.190.168</SourceAddress>
+            <SourceAddress mask="32">52.202.71.81</SourceAddress>
+            <SourceAddress mask="32">34.235.205.163</SourceAddress>
+            <SourceAddress mask="32">34.197.235.180</SourceAddress>
+            <SourceAddress mask="32">34.216.117.95</SourceAddress>
+            <SourceAddress mask="32">34.216.111.4</SourceAddress>
+            <SourceAddress mask="32">34.216.86.91</SourceAddress>
+            <SourceAddress mask="32">34.238.98.204</SourceAddress>
+            <SourceAddress mask="32">35.168.46.209</SourceAddress>
+        </MatchRule>
+    </IPRules>
+</AccessControl>

@@ -1,0 +1,23 @@
+{
+  "name": "codeq",
+  "version": "1.1.0",
+  "description": "Microservice to get code quality metrics from Sonarqube",
+  "main": "index.js",
+  "private": true,
+  "author": [],
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "request": "*",
+    "deasync": "*",
+    "moment":"*",
+    "async" : "*",
+    "lodash": "*"
+  },
+  "devDependencies": {
+    "aws-sdk": "*",
+    "mocha": "^v3.0.0",
+    "chai": "^3.5.0"
+  }
+}

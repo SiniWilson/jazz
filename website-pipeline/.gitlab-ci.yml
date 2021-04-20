@@ -1,0 +1,175 @@
+# added for CDP compliance: https://tmobile.gitlab.io/cdp/community-hub/documentation/COMMON/#usage
+include:
+  - project: 'tmobile/templates'
+    file: '/gitlab-ci/.tmo.global.common.gitlab-ci.yml'
+
+# exclude running pipeline on pushes for all jobs
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - when: always
+
+stages:
+  - tmo
+  #- test
+  - initialize
+  - build
+  - test
+  - code-scan
+  - deployment
+  - deployment-approval
+  - production-deployment
+
+# Ref: https://docs.gitlab.com/ee/user/project/new_ci_build_permissions_model.html#dependent-repositories
+# - echo -e "machine gitlab.com\nlogin git\npassword ${GITLAB_SVC_ACCT_PASSWORD}" > ~/.netrc
+.netrc: &setnetrc
+  - echo -e "machine gitlab.com\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+
+variables:
+  API_BASE_URL: https://cloud-api.corporate.t-mobile.com/api/jazz
+  SCRIPTS_REPO: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/core/jazz-pipeline-module.git
+  REPO_BASE_URL: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/shared/
+  WORKING_DIRECTORY: WorkingDirectory
+  WORKING_MODULE_DIRECTORY: $WORKING_DIRECTORY/jazz-pipeline-module
+  BUILD_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/website-lite:1.0.0
+  PRODUCTION_DEPLOYMENT_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/website-lite:1.0.0
+  INITIALIZE_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/groovy-npm-lite:1.0.0
+  DEPLOYMENT_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/groovy-npm-lite:1.0.0
+  DEPLOYMENT_APPROVAL_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/groovy-aws-lite:1.0.0
+  CODE_SCAN_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/sonar-cdp:1.0.0
+  UNIT_TEST_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/website-test:1.0.0
+  EVENT_TYPE: SERVICE_DEPLOYMENT
+  EVENT_HANDLER: GITLAB_CI
+  AWS_DEFAULT_REGION: us-west-2
+
+#@Pipeline trigger params {REPO_URL, REQUEST_ID, REPO_BRANCH, REPO_NAME, COMMIT_SHA, REQUEST_ID - Optional}
+
+initialize:
+  stage: initialize
+  image: $INITIALIZE_IMAGE   
+  script: 
+    - *setnetrc
+    - bash scripts/LoadConfigs.sh  
+  artifacts:
+    when: always
+    paths:
+      - $WORKING_DIRECTORY
+
+build:
+  stage: build
+  image: $BUILD_IMAGE  
+  tags:
+    - large
+  script:
+    - *setnetrc
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/DeployWebsiteUtilityModule.groovy buildWebsite || exit 1
+  artifacts:
+    when: always
+    paths:
+      - $WORKING_DIRECTORY
+
+unit-test:
+  stage: test
+  image: $UNIT_TEST_IMAGE   
+  script: 
+    - *setnetrc
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/DeployWebsiteUtilityModule.groovy runUnitTestCases || exit 1
+  # allowing failure since code coverage requires changes
+  allow_failure: true
+  after_script:
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/app/node_modules
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/node_modules
+  dependencies:
+    - build   
+  artifacts:
+    when: always
+    paths:
+      - $WORKING_DIRECTORY
+
+code-scan:
+  stage: code-scan
+  image: $CODE_SCAN_IMAGE
+  script: 
+    - *setnetrc
+    - cd WorkingDirectory/${REPO_NAME}
+    - updateJavaCACerts
+    - cd ../../
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/DeployWebsiteUtilityModule.groovy codeQualityCheck || exit 1
+  after_script:
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/app/node_modules
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/node_modules
+  dependencies:
+    - unit-test
+  artifacts:
+    when: always
+    paths:
+      - $WORKING_DIRECTORY
+      
+'deployment':
+  stage: deployment
+  image: $DEPLOYMENT_IMAGE
+  script:
+    - *setnetrc
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/DeployWebsiteUtilityModule.groovy configDeployment || exit 1
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/app/node_modules
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/node_modules
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+'approval':
+  stage: deployment-approval
+  image: $DEPLOYMENT_APPROVAL_IMAGE
+  script:
+    - *setnetrc
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/DeployWebsiteUtilityModule.groovy configureProductionDeploy || exit 1
+  dependencies:
+    - deployment
+  rules:
+    - if: '$REPO_BRANCH == "master"'
+      when: on_success
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+
+'production-deployment':
+  stage: production-deployment
+  image: $PRODUCTION_DEPLOYMENT_IMAGE
+  script:
+    - *setnetrc
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/DeployWebsiteUtilityModule.groovy productionDeploy || exit 1
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/app/node_modules
+    - rm -rf $WORKING_DIRECTORY/$REPO_NAME/node_modules
+  dependencies:
+    - approval
+  environment:
+    name: production
+  rules:
+    - if: '$REPO_BRANCH == "master"'
+      when: delayed
+      start_in: '1 day'
+      allow_failure: false
+  tags:
+    - large
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always

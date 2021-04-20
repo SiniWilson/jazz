@@ -1,0 +1,5 @@
+{
+    "Effect": "Allow",
+    "Action": "sts:AssumeRole",
+    "Resource": "arn:aws:iam::$accountId:role/jazz-platform_services"
+}

@@ -1,0 +1,1 @@
+# Sample NodeJS Function Template

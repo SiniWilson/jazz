@@ -1,0 +1,5 @@
+service_id: ea7cd63c-b64a-cabc-b6ee-e60ac69f119b
+eventScheduleRate: cron(0 4 * * ? *)
+eventScheduleEnable: true
+iamRoleARN: arn:aws:iam::302890901340:role/jazz_platform_services
+providerTimeout: 300

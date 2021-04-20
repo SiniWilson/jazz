@@ -1,0 +1,174 @@
+service: ${file(deployment-env.yml):service}
+
+provider:
+  name: aws
+  deploymentBucket: {s3bucketValue}
+  logRetentionInDays: {logRetentionInDays}
+  region: {region}
+  stage: _default
+  owner: _default
+  domain: _default
+  app_id: _default
+  stackTags:
+    Application: {applicationTag}
+    ApplicationId: {applicationId}
+    Platform: {platform}
+    Service: {serviceTag} # {service} is being used else where and don't want to break things
+    Domain: {domain}
+    Environment: {environmentTag}
+    EnvironmentId: {environmentId}
+    Owner: {owner}
+    GitCommitHash: {gitCommitHash}
+
+custom:
+  myStage: ${opt:stage, self:provider.stage}
+#  alerts:
+#    topics:
+#      alarm: ${self:service}-${opt:stage}-alerts-alarm
+#    global:
+#      - functionThrottles
+#      - functionErrors
+#      - functionInvocations
+#      - functionDuration
+#
+#plugins:
+#  - serverless-plugin-aws-alerts
+
+package:
+  exclude:
+    - ./**
+  include:
+   - ./bin/**
+
+functions:
+  handler:
+    name: ${self:domain}_${self:serviceTag}_${self:custom.myStage}
+    handler: bin/main
+    role: DEFAULT_LAMBDA_EXE_ROLE
+    description: ${self:service} Lambda Function
+    runtime: ${file(deployment-env.yml):providerRuntime}
+    memorySize: ${file(deployment-env.yml):providerMemorySize}
+    timeout: ${file(deployment-env.yml):providerTimeout}
+    #Start:events
+    eventsDisabled:
+      #Start:isScheduleEnabled
+      - schedule:
+          rate: ${file(deployment-env.yml):eventScheduleRate}
+          name: ${self:service}-${self:custom.myStage}-schedule
+          enabled: ${file(deployment-env.yml):eventScheduleEnable}
+      #End:isScheduleEnabled
+      #Start:isEc2EventEnabled
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ec2"
+            detail-type:
+              - "EC2 Instance State-change Notification"
+            detail:
+              state:
+                - pending
+      #End:isEc2EventEnabled
+      #Start:isDynamoDbEnabled
+      - stream:
+          type: dynamodb
+          #Start:dynamoDbstreamArn
+          streamArnDisabled: {event_dynamodb_stream_arn}
+          #End:dynamoDbstreamArn
+          #Start:dynamoDbstreamGetArn
+          arn:
+            Fn::GetAtt:
+              - sourceDynamoDbTable
+              - StreamArn
+          #End:dynamoDbstreamGetArn
+          batchSize: 1
+          startingPosition: LATEST
+          enabled: true
+      #End:isDynamoDbEnabled
+      #Start:isSQSEventEnabled
+      - sqs:
+          enabled: true
+          arn: {event_sqs_arn}
+      #End:isSQSEventEnabled
+      #Start:isStreamEnabled
+      - stream:
+          type: kinesis
+          startingPosition: LATEST
+          enabled: true
+          #Start:streamGetArn
+          arn:
+            Fn::GetAtt:
+              - sourceKinesisStreams
+              - Arn
+          #End:streamGetArn
+          #Start:streamArn
+          arnDisabled: {event_stream_arn}
+          #End:streamArn
+      #End:isStreamEnabled
+      #Start:isS3EventEnabled
+      - s3:
+          bucket: {event_source_s3}
+          event: {event_action_s3}
+      #End:isS3EventEnabled
+    #End:events
+
+    vpcDisabled:
+      securityGroupIds:
+        "Fn::Split":
+          - ","
+          - ${file(deployment-env.yml):securityGroupIds}
+      subnetIds:
+        "Fn::Split":
+          - ","
+          - ${file(deployment-env.yml):subnetIds}
+
+#Start:resources
+resourcesDisabled:
+  Resources:
+    #Start:S3CustomRole
+    customEventRole: ${file(policyFile.yml):s3Role}
+    #End:S3CustomRole
+    #Start:isStreamEnabled
+    customEventRole: ${file(policyFile.yml):kinesisRole}
+    #End:isStreamEnabled
+    #Start:isDynamoDbEnabled
+    customEventRole: ${file(policyFile.yml):dynamoDbRole}
+    #End:isDynamoDbEnabled
+    #Start:isSQSEventEnabled
+    customEventRole: ${file(policyFile.yml):sqsRole}
+    #End:isSQSEventEnabled
+    #Start:isSQSEventEnabled
+    #Start:isSqsResourceNotExist
+    sourceQueue:
+       Type: AWS::SQS::Queue
+       Properties:
+         QueueName: {event_source_sqs}
+         VisibilityTimeout: 165
+    #End:isSqsResourceNotExist
+    #End:isSQSEventEnabled
+    #Start:isStreamEnabled
+    sourceKinesisStreams:
+       Type: AWS::Kinesis::Stream
+       Properties:
+         Name: {event_source_kinesis}
+         ShardCount: 1
+    #End:isStreamEnabled
+    #Start:isDynamoDbEnabled
+    #Start:isDynamoDbtableNotExist
+    sourceDynamoDbTable:
+       Type: AWS::DynamoDB::Table
+       Properties:
+         TableName: {event_source_dynamodb}
+         AttributeDefinitions:
+           - AttributeName: ID
+             AttributeType: S
+         KeySchema:
+           - AttributeName: ID
+             KeyType: HASH
+         ProvisionedThroughput:
+           ReadCapacityUnits: 5
+           WriteCapacityUnits: 5
+         StreamSpecification:
+           StreamViewType: NEW_AND_OLD_IMAGES
+    #End:isDynamoDbtableNotExist
+    #End:isDynamoDbEnabled
+#End:resources

@@ -1,0 +1,132 @@
+# This pipeline is expected to be triggered with the following required PARAMS
+# @Pipeline trigger params {FQDN, ENVIRONMENT, ENDPOINT, REQUEST_ID, SERVICE_ID, ENDPOINT_TYPE, UPDATE_DNS(string)} 
+
+# DNS workflow for provisioning DNS for jazz services
+# @version: 2.0
+# @author: Saurav Dutta
+
+# added for CDP compliance: https://tmobile.gitlab.io/cdp/community-hub/documentation/COMMON/#usage
+include:
+  - project: 'tmobile/templates'
+    ref: tmo/master
+    file: '/gitlab-ci/.tmo.global.common.gitlab-ci.yml'
+
+# exclude running pipeline on pushes for all jobs
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - when: always
+
+stages:
+  - tmo
+  - test
+  - init
+  - approval
+  - create-certificate
+  - create-dns
+  - delete-dns
+  - delete-certificate
+
+variables:
+  DNS_PIPELINE_URL: https://gitlab.com/api/v4/projects/19532266/
+  DEV_API_BASE_URL: https://dev-jazz.ccp.t-mobile.com/api/gitlab/jazz
+  API_BASE_URL: https://cloud-api.corporate.t-mobile.com/api/jazz
+  GITLAB_BASE_URL: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/core/
+  SCRIPTS_REPO: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/core/jazz-pipeline-module.git
+  REPO_BASE_URL: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/shared/
+  SERVERLESS_CONFIG_REPO:  https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/core/serverless-config-pack.git
+  DOCKER_IMAGE: registry.gitlab.com/tmobile/jazz/core/packages/groovy-aws:1.0.0
+  DOCKER_IMAGE_TAG: "1.0.0"
+  WORKING_DIRECTORY: WorkingDirectory
+  WORKING_MODULE_DIRECTORY: $WORKING_DIRECTORY/jazz-pipeline-module
+  EVENT_TYPE: DNS
+  EVENT_HANDLER: GITLAB_CI
+  AWS_DEFAULT_REGION: us-west-2
+
+init-validation:
+  stage: init
+  image: "$DOCKER_IMAGE"
+  script:
+    - curl ifconfig.co
+    - git clone -b master --depth 1 $SCRIPTS_REPO $WORKING_MODULE_DIRECTORY    # Cloning  build module
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/initModule.groovy initializeModules
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+approval-workflow:
+  stage: approval
+  image: "$DOCKER_IMAGE"
+  script:
+    - curl ifconfig.co 
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/approvalModule.groovy approvalWorkflow
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY  
+    when: always
+
+create-certificate:
+  stage: create-certificate
+  image: "$DOCKER_IMAGE"
+  script:
+    - curl ifconfig.co 
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/createCertModule.groovy createCertificate
+  rules:
+    - when: delayed
+      start_in: '1 hour'
+      allow_failure: false
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+create-dns:
+  stage: create-dns
+  image: "$DOCKER_IMAGE"
+  script:
+    - curl ifconfig.co 
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/createDnsModule.groovy createDns
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+delete-dns:
+  stage: delete-dns
+  image: "$DOCKER_IMAGE"
+  script:
+    - curl ifconfig.co
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/deleteDnsModule.groovy deleteDnsRecord
+  rules:
+    - if: '$UPDATE_DNS == "true"'
+      when: always
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always
+
+delete-certificate:
+  stage: delete-certificate
+  image: "$DOCKER_IMAGE"
+  script:
+    - curl ifconfig.co 
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/Login.groovy  getAuthToken  || exit 1  #Renewing the token
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ $WORKING_MODULE_DIRECTORY/ConfigLoader.groovy   getConfigData || exit 1  #getting config data
+    - groovy -cp $WORKING_MODULE_DIRECTORY/ scripts/deleteCertModule.groovy deleteCertificate
+  rules:
+    - if: '$UPDATE_DNS == "true"'
+      when: always
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+    when: always

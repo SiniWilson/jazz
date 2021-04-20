@@ -1,0 +1,24 @@
+{
+  "GRAPH_API_TOKEN_URL": "https://login.microsoftonline.com/{conf-cas-service-principal-tenantid}/oauth2/v2.0/token",
+  "SVC_PRINCIPAL_PWD_LOCATION": "{conf-cas-service-principal-pwd-location}",
+  "JAZZ_SERVICE_HOST": "https://cloud-api.corporate.t-mobile.com",
+  "JAZZ_DELETE_API": "/api/jazz/delete-serverless-service",
+  "JAZZ_SENDEMAIL_API": "/api/platform/send-email",
+  "JAZZ_EMAIL_FROM": "ServerlessDev@T-Mobile.com",
+  "SERVICE_DELETED_BY": "DailyCleanupJob@T-Mobile.com",
+  "JAZZ_EMAIL_TO": {
+    "emailID": "ServerlessDev@t-mobile.com",
+    "name": {
+      "first": "Serverless",
+      "last": "Development"
+    }
+  },
+  "JAZZ_EMAIL_SUBJECT_TEMPLATE": "Jazz Daily Cleanup Job deleted %s service(s)",
+  "JAZZ_EMAIL_BODY_TEMPLATE": "The following service(s) have been deleted: %s",
+  "SERVICES_TABLE_NAME": "jazz_services",
+  "CLEANUP_DOMAIN_LIST": ["jazztest", "jazztesting"],
+  "DB_REGION": "us-west-2",
+  "JAZZTEST_LIFE_IN_DAYS": "{jazztest-life-days}", 
+  "POC_APP_LIFE_IN_DAYS": "{jazz-services-cleanup-days}",
+  "POC_APP_NAMES": ["{jazz-services-poc-app-names}"]
+}

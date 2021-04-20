@@ -1,0 +1,24 @@
+{
+	"Version": "2012-10-17",
+    "Id": "PolicyForCloudFrontPrivateContent",
+    "Statement": [
+        {
+            "Sid": "editor1",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::$accountId:role/jazz-platform_services"
+            },
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::jazz-deployments-$accountName-useast1-dev/*"
+        },
+        {
+            "Sid": "editor2",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::$accountId:role/jazz-platform_services"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::jazz-deployments-$accountName-useast1-dev"
+        }
+    ]
+}

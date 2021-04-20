@@ -1,0 +1,17 @@
+# Optional: Uncomment the line below & put your custom role here which has the IAM permissions required by your code
+#iamRoleARN: arn:aws:iam::$account:role/$role
+
+# Optional: Uncomment the line below & put specific security groups (comma seperated) that your function needs to execute.
+#securityGroupIds: sg-abc0123
+
+# Optional: Uncomment the line below & put specific subnet ids (comma seperated) that your function needs to execute.
+#subnetIds: subnet-abc0123, subnet-xyz0789
+
+# Optional: Uncomment the lines below & put specific  Authorizer ARN that your API needs Format : arn:aws:lambda:region:account-id:function:function-name
+#enable_api_security: true
+#authorizer_arn: arn:aws:lambda:region:account-id:function:function-name
+
+service_id: 39c9d2bb-b523-ddb3-47c1-c8f6b8118c4b
+iamRoleARN: arn:aws:iam::302890901340:role/jazz_platform_services
+require_internal_access: true
+custom_integration_spec: false

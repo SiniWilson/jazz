@@ -1,0 +1,73 @@
+# This pipeline is expected to be triggered with the following required PARAMS
+#@Pipeline trigger params {SERVICE_ID, TRACKING_ID, DESCRIPTION}
+
+# added for CDP compliance: https://tmobile.gitlab.io/cdp/community-hub/documentation/COMMON/#usage
+include:
+  - project: 'tmobile/templates'
+    ref: tmo/master
+    file: '/gitlab-ci/.tmo.global.common.gitlab-ci.yml'
+
+# exclude running pipeline on pushes for all jobs
+# workflow:
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "push"'
+#       when: never
+
+stages:
+  - tmo
+  - test
+  - init
+  - publish
+  - notify
+  
+variables:
+  API_BASE_URL: https://cloud-api.corporate.t-mobile.com/api/jazz
+  SCRIPTS_REPO: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/core/jazz-pipeline-module.git
+  REPO_BASE_URL: https://$GITLAB_SVC_ACCT_USER:$GITLAB_SVC_ACCT_PASSWORD@gitlab.com/tmobile/jazz/shared/ 
+  WORKING_DIRECTORY: WorkingDirectory
+  WORKING_MODULE_DIRECTORY: $WORKING_DIRECTORY/jazz-pipeline-module
+  DOCKER_IMAGE: registry.gitlab.com/tmobile/jazz/test/core_test/docker/groovy:1.0.0
+  EVENT_TYPE: CLEARWATER_PUBLISH
+  PROPERTIES_FILE: $WORKING_DIRECTORY/properties.json
+      
+job 'initialization':
+  stage: init
+  image: $DOCKER_IMAGE
+  script:
+    - curl ifconfig.co 
+    - git clone -b feature/clearwater $SCRIPTS_REPO  $WORKING_MODULE_DIRECTORY    # Cloning  build module
+    - bash scripts/ModuleLoader.sh  "$EVENT_TYPE" "$SERVICE_ID" "$TRACKING_ID" "$DESCRIPTION" || exit 1
+    - bash scripts/Init.sh
+    - bash scripts/Artifacts.sh # download-clearwater-artifacts
+  except:
+    - pushes    
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+
+
+job 'Publish Clearwater artifacts':
+  stage: publish
+  image: $DOCKER_IMAGE
+  script:
+    - bash scripts/Publish.sh "$DESCRIPTION"
+    - groovy -cp $moduleDirectory/ $moduleDirectory/ClearwaterModule.groovy destroy
+  except:
+    - pushes    
+  when: on_success
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY
+      
+      
+job 'Send Notification':
+  stage: notify
+  image: $DOCKER_IMAGE
+  script:
+    - bash scripts/Notification.sh
+  except:
+    - pushes    
+  when: on_success
+  artifacts:
+    paths:
+      - $WORKING_DIRECTORY  

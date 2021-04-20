@@ -1,0 +1,4 @@
+{
+  "TABLE_NAME": "{service-config-table}",
+  "region": "{conf-region}"
+}

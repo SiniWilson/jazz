@@ -1,1 +1,1 @@
-This is a sample NodeJs template project
+# Sample NodeJS API Template

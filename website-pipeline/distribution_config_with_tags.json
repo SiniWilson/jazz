@@ -1,0 +1,98 @@
+{
+  "DistributionConfig": {
+    "CallerReference": "{environmentId}-static-website-distribution-{service}",
+    "Aliases": {
+      "Quantity": 0
+    },
+    "Origins": {
+      "Quantity": 1,
+      "Items": [{
+        "Id": "{environmentId}-static-website-origin-{service}",
+        "DomainName": "{bucketName}.s3.{region}.amazonaws.com",
+        "OriginPath": "/{environmentId}",
+        "S3OriginConfig": {
+          "OriginAccessIdentity": "{oai}"
+        }
+      }]
+    },
+    "DefaultRootObject": "index.html",
+    "DefaultCacheBehavior": {
+      "TargetOriginId": "{environmentId}-static-website-origin-{service}",
+      "ForwardedValues": {
+        "QueryString": true,
+        "Cookies": {
+          "Forward": "none"
+        }
+      },
+      "TrustedSigners": {
+        "Enabled": false,
+        "Quantity": 0
+      },
+      "SmoothStreaming": false,
+      "Compress": true,
+      "ViewerProtocolPolicy": "redirect-to-https",
+      "MinTTL": 3600
+    },
+    "CacheBehaviors": {
+      "Quantity": 0
+    },
+    "CustomErrorResponses": {
+      "Quantity": 1,
+      "Items": [{
+        "ErrorCode": 404,
+        "ResponsePagePath": "/index.html",
+        "ResponseCode": "200",
+        "ErrorCachingMinTTL": 300
+      }]
+    },
+    "Comment": "",
+    "Logging": {
+      "Enabled": false,
+      "IncludeCookies": true,
+      "Bucket": "",
+      "Prefix": ""
+    },
+    "PriceClass": "PriceClass_All",
+    "Enabled": true
+  },
+  "Tags": {
+    "Items": [
+      {
+        "Key": "Application",
+        "Value": "{applicationTag}"
+      },
+      {
+        "Key": "ApplicationId",
+        "Value": "{applicationId}"
+      },
+      {
+        "Key": "Platform",
+        "Value": "{platform}"
+      },
+      {
+        "Key": "Service",
+        "Value": "{service}"
+      },
+      {
+        "Key": "Domain",
+        "Value": "{domain}"
+      },
+      {
+        "Key": "Environment",
+        "Value": "{environmentTag}"
+      },
+      {
+        "Key": "EnvironmentId",
+        "Value": "{environmentId}"
+      },
+      {
+        "Key": "Owner",
+        "Value": "{owner}"
+      },
+      {
+        "Key": "GitCommitHash",
+        "Value": "{gitCommitHash}"
+      }
+    ]
+  }
+}

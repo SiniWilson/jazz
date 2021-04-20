@@ -1,3 +1,7 @@
-service: static-website-template
-domain: platform
-create_cloudfront_url : false
+# Uncomment below to customize default build steps. Add websiteType below & add your build commands to build.website file
+# type: $websiteType # Example - mkdocs, hugo.
+
+
+# Uncomment below to customize Lambda@Edge configurations
+# lambdaEdgeEventType: 'viewer-request' # Supported values: https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_LambdaFunctionAssociation.html
+# lambdaEdgeAuthorizerArn: $userLambdaAuthorizerARNWithVersion # Example - arn:aws:lambda:$REGION:$ACCOUNTID:function:my-lambda-authorizer-prod:4

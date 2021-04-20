@@ -1,0 +1,10 @@
+{
+  "events_table":"Events_Stg",
+  "event_handler_table": "Event_Handler_Stg",
+  "event_type_table": "Event_Type_Stg",
+  "event_name_table": "Event_Name_Stg",
+  "event_status_table": "Event_Status_Stg",
+  "event_hub":"jazz-events-hub-stg",
+  "eventBusName": "jazz-platform-events-stg",
+  "eventSource": "jazz"
+}

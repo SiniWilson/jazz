@@ -1,10 +1,12 @@
-service: api-template-nodejs
-securityGroupIds: {inst_security_group_id}
-subnetIds: {inst_subnet_ids}
-providerRuntime : nodejs4.3
-providerMemorySize : 256
-providerTimeout : 160
-region: {inst_region}
-domain: platform
-# Put your custom role here which has the IAM permissions required by your code
-iamRoleARN: {inst_role_lambda_basic_execution}
+# Optional: Uncomment the line below & put your custom role here which has the IAM permissions required by your code
+#iamRoleARN: arn:aws:iam::$account:role/$role
+
+# Optional: Uncomment the line below & put specific security groups (comma seperated) that your function needs to execute.
+#securityGroupIds: sg-abc0123
+
+# Optional: Uncomment the line below & put specific subnet ids (comma seperated) that your function needs to execute.
+#subnetIds: subnet-abc0123, subnet-xyz0789
+
+# Optional: Uncomment the lines below & put specific  Authorizer ARN that your API needs Format : arn:aws:lambda:region:account-id:function:function-name
+#enable_api_security: true
+#authorizer_arn: arn:aws:lambda:region:account-id:function:function-name
