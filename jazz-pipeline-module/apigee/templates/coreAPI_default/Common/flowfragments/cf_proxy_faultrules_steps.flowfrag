@@ -1,5 +1,0 @@
-		<FaultRule name="ProxyFaultHandling">
-            <Step>
-                <Name>cf_ProxyFaultHandling</Name>
-            </Step>
-        </FaultRule>
