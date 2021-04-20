@@ -1,1 +1,0 @@
-This is a azure-api-template-csharp project
