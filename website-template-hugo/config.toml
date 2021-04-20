@@ -1,5 +1,0 @@
-baseURL = "http://example.org/"
-languageCode = "en-us"
-title = "Hugo Template"
-theme = "ananke"
-publishDir="app"

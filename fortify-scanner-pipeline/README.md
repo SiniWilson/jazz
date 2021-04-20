@@ -1,2 +1,0 @@
-# fortify-scanner-pipeline
-

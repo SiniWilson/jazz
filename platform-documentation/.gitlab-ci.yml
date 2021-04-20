@@ -1,9 +1,0 @@
-# Added for CDP compliance: https://tmobile.gitlab.io/cdp/community-hub/documentation/COMMON/#usage
-include:
-  - project: 'tmobile/templates'
-    file: '/gitlab-ci/.tmo.global.common.gitlab-ci.yml'
-
-stages:
-  - tmo
-  - test
-
