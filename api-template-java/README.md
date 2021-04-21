@@ -1,1 +1,1 @@
-# Java API template
+This is a sample Java template project

@@ -1,7 +1,9 @@
 # Add any directories, files, or patterns you don't want to be tracked by version control
 .serverless
-api-java-template.iml
 node_modules
 .DS_Store
-/target/
-/.idea/
+.classpath
+.project
+.settings/
+target/
+.vscode/
